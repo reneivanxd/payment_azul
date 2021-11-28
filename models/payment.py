@@ -76,7 +76,7 @@ class AzulPaymentAcquirer(models.Model):
         sign = sign + self.azul_auth_key
         _logger.info('_azul_generate_digital_sign: values=%s, inout=%s, keys=%s, sign=%s',
                      pprint.pformat(values_dict), inout, keys, sign)
-        return sha512(sign.encode('utf-16le')).hexdigest()
+        return sha512(sign.encode('utf-16le')).hexdigest().upper()
 
     @api.multi
     def azul_form_generate_values(self, values):
