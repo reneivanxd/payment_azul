@@ -1,6 +1,7 @@
 # coding: utf-8
 from hashlib import sha512
 import logging
+import pprint
 
 from werkzeug import urls
 
@@ -66,7 +67,7 @@ class AzulPaymentAcquirer(models.Model):
         keys = self._azul_auth_hash_fields[inout]
         values_dict = dict(values or {})
 
-        sign = ''.join([values_dict.get(key) or '' for key in keys])
+        sign = ''.join([values_dict.get(key, '') for key in keys])
         # Add the pre-shared secret key at the end of the signature
         sign = sign + self.azul_auth_key
         return sha512(sign.encode('utf-8')).hexdigest()
@@ -79,7 +80,7 @@ class AzulPaymentAcquirer(models.Model):
             'Azul_MerchantId': self.azul_merchant_id,
             'Azul_MerchantName': self.company_id.name,
             'Azul_MerchantType': self.azul_merchant_type,
-            'Azul_CurrencyCode': values['currency'] and values['currency'].name or '',
+            'Azul_CurrencyCode': values['currency'] and values['currency'].symbol or '$',
             'Azul_OrderNumber': values['reference'],
             'Azul_Amount': float_repr(float_round(values['amount'], 2) * 100, 0),
             'Azul_ITBIS': float_repr(float_round(values['amount'] - (values['amount']/1.18), 2) * 100, 0),
@@ -106,11 +107,11 @@ class AzulPaymentTransaction(models.Model):
     _inherit = 'payment.transaction'
 
     # azul status
-    _azul_valid_tx_status = [190]
-    _azu_pending_tx_status = [790, 791, 792, 793]
-    _azu_cancel_tx_status = [890, 891]
-    _azu_error_tx_status = [490, 491, 492]
-    _azu_reject_tx_status = [690]
+    # _azul_valid_tx_status = [190]
+    # _azu_pending_tx_status = [790, 791, 792, 793]
+    # _azu_cancel_tx_status = [890, 891]
+    # _azu_error_tx_status = [490, 491, 492]
+    # _azu_reject_tx_status = [690]
 
     # --------------------------------------------------
     # FORM RELATED METHODS
@@ -120,6 +121,8 @@ class AzulPaymentTransaction(models.Model):
     def _azul_form_get_tx_from_data(self, data):
         """ Given a data dict coming from buckaroo, verify it and find the related
         transaction record. """
+        _logger.info('_azul_form_get_tx_from_data: data=%s',
+                     pprint.pformat(data))
         origin_data = dict(data)
         reference, shasign = origin_data.get(
             'OrderNumber'), origin_data.get('AuthHash')
@@ -152,40 +155,44 @@ class AzulPaymentTransaction(models.Model):
         return tx
 
     def _azul_form_get_invalid_parameters(self, data):
+        _logger.info('_azul_form_get_invalid_parameters: data=%s',
+                     pprint.pformat(data))
         invalid_parameters = []
         if self.acquirer_reference and data.get('RRN') != self.acquirer_reference:
             invalid_parameters.append(
                 ('Transaction Id', data.get('RRN'), self.acquirer_reference))
         # check what is buyed
-        if data.get('Amount') != float_repr(float_round(self.amount, 2) * 100, 0):
+        amount = float_repr(float_round(self.amount, 2) * 100, 0)
+        if data.get('Amount') != amount:
             invalid_parameters.append(
                 ('Amount', data.get('Amount'), float_repr(float_round(self.amount, 2) * 100, 0)))
 
         return invalid_parameters
 
     def _azul_form_validate(self, data):
+        _logger.info('_azul_form_validate: data=%s', pprint.pformat(data))
         data = dict(data)
-        status_code = data.get('ResponseCode', '0')
-        if status_code in self._azul_valid_tx_status:
+        status_code = data.get('ResponseMessage', '').upper()
+        if status_code == 'APROBADA':
             self.write({
                 'state': 'done',
                 'acquirer_reference': data.get('RRN'),
             })
             return True
-        elif status_code in self._azul_pending_tx_status:
-            self.write({
-                'state': 'pending',
-                'acquirer_reference': data.get('RRN'),
-            })
-            return True
-        elif status_code in self._azul_cancel_tx_status:
+        # elif status_code in self._azul_pending_tx_status:
+        #     self.write({
+        #         'state': 'pending',
+        #         'acquirer_reference': data.get('RRN'),
+        #     })
+        #     return True
+        elif status_code == 'CANCELADA':
             self.write({
                 'state': 'cancel',
                 'acquirer_reference': data.get('RRN'),
             })
             return True
         else:
-            error = 'Azul: feedback error'
+            error = data.get('ErrorDescription', 'Azul: feedback error')
             _logger.info(error)
             self.write({
                 'state': 'error',
