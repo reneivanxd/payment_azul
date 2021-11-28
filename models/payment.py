@@ -81,7 +81,7 @@ class AzulPaymentAcquirer(models.Model):
             'Azul_MerchantId': self.azul_merchant_id,
             'Azul_MerchantName': self.company_id.name,
             'Azul_MerchantType': self.azul_merchant_type,
-            'Azul_CurrencyCode': values['currency'] and values['currency'].symbol or '$',
+            'Azul_CurrencyCode': values['currency'] and values['currency'].name or '$',
             'Azul_OrderNumber': values['reference'],
             'Azul_Amount': float_repr(float_round(values['amount'], 2) * 100, 0),
             'Azul_ITBIS': float_repr(float_round(values['amount'] - (values['amount']/1.18), 2) * 100, 0),
@@ -92,6 +92,9 @@ class AzulPaymentAcquirer(models.Model):
         })
         azul_tx_values['Azul_AuthHash'] = self._azul_generate_digital_sign(
             'in', azul_tx_values)
+
+        _logger.info('azul_form_generate_values: values=%s',
+                     pprint.pformat(azul_tx_values))
         return azul_tx_values
 
     @api.multi
