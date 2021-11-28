@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <template id="azul_form">
+            <input type="hidden" name="data_set" t-att-data-action-url="tx_url" data-remove-me=""/>
+            <input type="hidden" id="MerchantId" name="MerchantId" t-att-value="Azul_MerchantId"/>
+            <input type="hidden" id="MerchantName" name="MerchantName" t-att-value="Azul_MerchantName"/>
+            <input type="hidden" id="MerchantType" name="MerchantType" t-att-value="Azul_MerchantType"/>
+            <input type="hidden" id="CurrencyCode" name="CurrencyCode" t-att-value="Azul_CurrencyCode" />
+            <input type="hidden" id="OrderNumber" name="OrderNumber" t-att-value="Azul_OrderNumber" />
+            <input type="hidden" id="Amount" name="Amount" t-att-value="Azul_Amount" />
+            <input type="hidden" id="ITBIS" name="ITBIS" t-att-value="Azul_ITBIS" />
+            <!-- Custom Fields -->
+            <!-- <input type="hidden" id="UseCustomField1" name="UseCustomField1" t-att-value="Azul_UseCustomField1" />
+            <input type="hidden" id="CustomField1Label" name="CustomField1Label" t-att-value="Azul_CustomField1Label" />
+            <input type="hidden" id="CustomField1Value" name="CustomField1Value" t-att-value="Azul_CustomField1Value" /> -->
+            <!-- URLs -->
+            <input type="hidden" id="ApprovedUrl" name="ApprovedUrl" t-att-value="Azul_ApprovedUrl" />
+            <input type="hidden" id="DeclinedUrl" name="DeclinedUrl" t-att-value="Azul_DeclinedUrl" />
+            <input type="hidden" id="CancelUrl" name="CancelUrl" t-att-value="Azul_CancelUrl" />
+            <!-- Auth -->
+            <input type="hidden" id="AuthHash" name="AuthHash" t-att-value="Azul_AuthHash" />
+        </template>
+    </data>
+</odoo>

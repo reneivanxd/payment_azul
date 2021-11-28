@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="acquirer_form_buckaroo" model="ir.ui.view">
+            <field name="name">acquirer.form.buckaroo</field>
+            <field name="model">payment.acquirer</field>
+            <field name="inherit_id" ref="payment.acquirer_form"/>
+            <field name="arch" type="xml">
+                <xpath expr='//group[@name="acquirer"]' position='after'>
+                    <group attrs="{'invisible': [('provider', '!=', 'azul')]}">
+                        <field name="azul_merchant_id" />
+                        <field name="azul_merchant_type" />
+                        <field name="azul_auth_key" />
+                    </group>
+                </xpath>
+            </field>
+        </record>
+    </data>
+</odoo>

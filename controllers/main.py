@@ -1,0 +1,23 @@
+# -*- coding: utf-8 -*-
+
+import logging
+import pprint
+import werkzeug
+
+from odoo import http
+from odoo.http import request
+
+_logger = logging.getLogger(__name__)
+
+
+class AzulController(http.Controller):
+
+    @http.route([
+        '/payment/azul/approved',
+        '/payment/azul/cancel',
+        '/payment/azul/declined'], type='http', auth='none', csrf=False)
+    def azul_return(self, **post):
+        _logger.info('azul_approved: post data %s', pprint.pformat(post))
+        request.env['payment.transaction'].sudo().form_feedback(post, 'azul')
+        # post = {key.upper(): value for key, value in post.items()}
+        return werkzeug.utils.redirect(post.get('return_url', '/'))
