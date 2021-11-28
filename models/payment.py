@@ -31,7 +31,7 @@ class AzulPaymentAcquirer(models.Model):
     azul_merchant_type = fields.Char(
         'MerchantType', required_if_provider='azul', groups='base.group_user')
     azul_auth_key = fields.Char(
-        'AuthKey"', required_if_provider='azul', groups='base.group_user')
+        'AuthKey', required_if_provider='azul', groups='base.group_user')
 
     _azul_auth_hash_fields = {
         'out': ['OrderNumber', 'Amount', 'AuthorizationCode', 'DateTime', 'ResponseCode' 'ISOCode', 'ResponseMessage', 'ErrorDescription', 'RRN'],
