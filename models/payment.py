@@ -8,6 +8,7 @@ from werkzeug import urls
 from odoo import api, fields, models, _
 from odoo.addons.payment.models.payment_acquirer import ValidationError
 from odoo.tools.float_utils import float_compare, float_repr, float_round
+from odoo.http import request
 
 _logger = logging.getLogger(__name__)
 
@@ -101,6 +102,9 @@ class AzulPaymentAcquirer(models.Model):
             return 'https://pagos.azul.com.do/paymentpage/Default.aspx'
         else:
             return 'https://pruebas.azul.com.do/paymentpage/Default.aspx'
+
+    def get_base_url(self):
+        return request and request.httprequest.url_root or self.env['ir.config_parameter'].sudo().get_param('web.base.url')
 
 
 class AzulPaymentTransaction(models.Model):
