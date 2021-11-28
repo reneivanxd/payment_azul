@@ -36,7 +36,7 @@ class AzulPaymentAcquirer(models.Model):
 
     _azul_auth_hash_fields = {
         'out': ['OrderNumber', 'Amount', 'AuthorizationCode', 'DateTime', 'ResponseCode' 'ISOCode', 'ResponseMessage', 'ErrorDescription', 'RRN'],
-        'in': ['Azul_MerchantId', 'Azul_MerchantName', 'Azul_MerchantType', 'Azul_CurrencyCode', 'Azul_OrderNumber' 'Azul_Amount', 'Azul_ITBIS', 'Azul_ApprovedUrl', 'Azul_DeclinedUrl', 'Azul_CancelUrl', 'Azul_UseCustomField1', 'Azul_CustomField1Label', 'Azul_CustomField1Value']
+        'in': ['Azul_MerchantId', 'Azul_MerchantName', 'Azul_MerchantType', 'Azul_CurrencyCode', 'Azul_OrderNumber' 'Azul_Amount', 'Azul_ITBIS', 'Azul_ApprovedUrl', 'Azul_DeclinedUrl', 'Azul_CancelUrl', 'Azul_UseCustomField1', 'Azul_CustomField1Label', 'Azul_CustomField1Value', 'Azul_UseCustomField2', 'Azul_CustomField2Label', 'Azul_CustomField2Value']
     }
 
     _approved_url = '/payment/azul/approved'
@@ -89,6 +89,14 @@ class AzulPaymentAcquirer(models.Model):
             'Azul_ApprovedUrl': urls.url_join(base_url, self._approved_url) + "?return_url=%s" % (azul_tx_values.get('return_url', '/')),
             'Azul_CancelUrl': urls.url_join(base_url, self._cancel_url) + "?return_url=%s" % (azul_tx_values.get('return_url', '/')),
             'Azul_DeclinedUrl': urls.url_join(base_url, self._declined_url) + "?return_url=%s" % (azul_tx_values.get('return_url', '/')),
+
+            'Azul_UseCustomField1': '0',
+            'Azul_CustomField1Label': '',
+            'Azul_CustomField1Value': '',
+
+            'Azul_UseCustomField2': '0',
+            'Azul_CustomField2Label': '',
+            'Azul_CustomField2Value': '',
             # 'Brq_culture': (values.get('partner_lang') or 'en_US').replace('_', '-'),
         })
         azul_tx_values['Azul_AuthHash'] = self._azul_generate_digital_sign(
