@@ -68,10 +68,15 @@ class AzulPaymentAcquirer(models.Model):
         keys = self._azul_auth_hash_fields[inout]
         values_dict = dict(values or {})
 
+        _logger.info('_azul_generate_digital_sign: values=%s, inout=%s, keys=%s',
+                     pprint.pformat(values_dict), inout, keys)
+
         sign = ''.join([values_dict.get(key, '') for key in keys])
         # Add the pre-shared secret key at the end of the signature
         sign = sign + self.azul_auth_key
-        return sha512(sign.encode('utf-8')).hexdigest()
+        _logger.info('_azul_generate_digital_sign: values=%s, inout=%s, keys=%s, sign=%s',
+                     pprint.pformat(values_dict), inout, keys, sign)
+        return sha512(sign.encode('utf-16le')).hexdigest()
 
     @api.multi
     def azul_form_generate_values(self, values):
