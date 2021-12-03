@@ -16,11 +16,11 @@
             <input type="hidden" id="CancelUrl" name="CancelUrl" t-att-value="Azul_CancelUrl" />
             <!-- Custom Fields -->
             <input type="hidden" id="UseCustomField1" name="UseCustomField1" t-att-value="Azul_UseCustomField1" />
-            <input type="hidden" id="CustomField1Label" name="CustomField1Label" t-att-value="Azul_CustomField1Label" />
-            <input type="hidden" id="CustomField1Value" name="CustomField1Value" t-att-value="Azul_CustomField1Value" />
+            <!-- <input type="hidden" id="CustomField1Label" name="CustomField1Label" t-att-value="Azul_CustomField1Label" />
+            <input type="hidden" id="CustomField1Value" name="CustomField1Value" t-att-value="Azul_CustomField1Value" /> -->
             <input type="hidden" id="UseCustomField2" name="UseCustomField2" t-att-value="Azul_UseCustomField2" />
-            <input type="hidden" id="CustomField2Label" name="CustomField2Label" t-att-value="Azul_CustomField2Label" />
-            <input type="hidden" id="CustomField2Value" name="CustomField2Value" t-att-value="Azul_CustomField2Value" />
+            <!-- <input type="hidden" id="CustomField2Label" name="CustomField2Label" t-att-value="Azul_CustomField2Label" />
+            <input type="hidden" id="CustomField2Value" name="CustomField2Value" t-att-value="Azul_CustomField2Value" /> -->
             <!-- Auth -->
             <input type="hidden" id="AuthHash" name="AuthHash" t-att-value="Azul_AuthHash" />
         </template>

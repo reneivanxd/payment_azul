@@ -71,12 +71,18 @@ class AzulPaymentAcquirer(models.Model):
         _logger.info('_azul_generate_digital_sign: values=%s, inout=%s, keys=%s',
                      pprint.pformat(values_dict), inout, keys)
 
-        sign = ''.join([values_dict.get(key, '') for key in keys])
+        def get_value(key):
+            value = values_dict.get(key, '')
+            if type(value) is bool:
+                return str(int(value))
+            return str(value)
+
+        sign = ''.join([get_value(key) for key in keys])
         # Add the pre-shared secret key at the end of the signature
-        sign = sign + self.azul_auth_key
+        sign = sign + str(self.azul_auth_key)
         _logger.info('_azul_generate_digital_sign: sign=%s', sign)
 
-        return sha512(str(sign).encode('utf-16le')).hexdigest()
+        return sha512(sign.encode('utf-16le')).hexdigest()
 
     @api.multi
     def azul_form_generate_values(self, values):
@@ -92,14 +98,14 @@ class AzulPaymentAcquirer(models.Model):
             'Azul_Amount': float_repr(float_round(values['amount'], 2) * 100, 0),
             'Azul_ITBIS': float_repr(float_round(values['amount'] - (values['amount']/1.18), 2) * 100, 0),
             'Azul_ApprovedUrl': urls.url_join(base_url, self._approved_url) + "?return_url=%s" % (azul_tx_values.get('return_url', '/')),
-            'Azul_CancelUrl': urls.url_join(base_url, self._cancel_url) + "?return_url=%s" % (azul_tx_values.get('return_url', '/')),
+            'Azul_CancelUrl': urls.url_join(base_url, self._cancel_url) + "?return_url=%s&OrderNumber=%s" % (azul_tx_values.get('return_url', '/'), values['reference']),
             'Azul_DeclinedUrl': urls.url_join(base_url, self._declined_url) + "?return_url=%s" % (azul_tx_values.get('return_url', '/')),
 
-            'Azul_UseCustomField1': '0',
+            'Azul_UseCustomField1': False,
             'Azul_CustomField1Label': '',
             'Azul_CustomField1Value': '',
 
-            'Azul_UseCustomField2': '0',
+            'Azul_UseCustomField2': False,
             'Azul_CustomField2Label': '',
             'Azul_CustomField2Value': '',
             # 'Brq_culture': (values.get('partner_lang') or 'en_US').replace('_', '-'),
@@ -145,11 +151,12 @@ class AzulPaymentTransaction(models.Model):
         _logger.info('_azul_form_get_tx_from_data: data=%s',
                      pprint.pformat(data))
         origin_data = dict(data)
-        reference, shasign = origin_data.get(
-            'OrderNumber'), origin_data.get('AuthHash')
-        if not reference or not shasign:
-            error_msg = _('Azul: received data with missing reference (%s) or shasign (%s)') % (
-                reference, shasign)
+
+        reference, status_code, shasign = origin_data.get(
+            'OrderNumber'), data.get('ResponseMessage', '').upper(), origin_data.get('AuthHash', '')
+        if not reference:
+            error_msg = _('Azul: received data with missing reference (%s)') % (
+                reference)
             _logger.info(error_msg)
             raise ValidationError(error_msg)
 
@@ -164,10 +171,13 @@ class AzulPaymentTransaction(models.Model):
             _logger.info(error_msg)
             raise ValidationError(error_msg)
 
+        if status_code == 'CANCELADA':
+            return tx
+
         # verify shasign
         shasign_check = tx.acquirer_id._azul_generate_digital_sign(
             'out', origin_data)
-        if shasign_check.upper() != shasign.upper():
+        if shasign_check != shasign:
             error_msg = _('Azul: invalid shasign, received %s, computed %s, for data %s') % (
                 shasign, shasign_check, data)
             _logger.info(error_msg)
@@ -179,9 +189,13 @@ class AzulPaymentTransaction(models.Model):
         _logger.info('_azul_form_get_invalid_parameters: data=%s',
                      pprint.pformat(data))
         invalid_parameters = []
-        if self.acquirer_reference and data.get('RRN') != self.acquirer_reference:
+        if self.acquirer_reference and data.get('AzulOrderId', '') != self.acquirer_reference:
             invalid_parameters.append(
-                ('Transaction Id', data.get('RRN'), self.acquirer_reference))
+                ('Transaction Id', data.get('AzulOrderId', ''), self.acquirer_reference))
+
+        if data.get('ResponseMessage', '').upper() == 'CANCELADA':
+            return invalid_parameters
+
         # check what is buyed
         amount = float_repr(float_round(self.amount, 2) * 100, 0)
         if data.get('Amount') != amount:
@@ -197,27 +211,27 @@ class AzulPaymentTransaction(models.Model):
         if status_code == 'APROBADA':
             self.write({
                 'state': 'done',
-                'acquirer_reference': data.get('RRN'),
+                'acquirer_reference': data.get('AzulOrderId', ''),
             })
             return True
-        # elif status_code in self._azul_pending_tx_status:
-        #     self.write({
-        #         'state': 'pending',
-        #         'acquirer_reference': data.get('RRN'),
-        #     })
-        #     return True
+        elif status_code == 'DECLINADA':
+            self.write({
+                'state': 'error',
+                'state_message': data.get('ErrorDescription', 'Azul: feedback error'),
+                'acquirer_reference': data.get('AzulOrderId', ''),
+            })
+            return True
         elif status_code == 'CANCELADA':
             self.write({
                 'state': 'cancel',
-                'acquirer_reference': data.get('RRN'),
+                'acquirer_reference': '',
             })
             return True
         else:
-            error = data.get('ErrorDescription', 'Azul: feedback error')
-            _logger.info(error)
+            _logger.error("_azul_form_validate: data=%s", pprint.pformat(data))
             self.write({
                 'state': 'error',
-                'state_message': error,
-                'acquirer_reference': data.get('RRN'),
+                'state_message': data.get('ErrorDescription', 'Azul: feedback error'),
+                'acquirer_reference': data.get('AzulOrderId', ''),
             })
             return False
