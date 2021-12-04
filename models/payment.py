@@ -98,11 +98,11 @@ class AzulPaymentAcquirer(models.Model):
             'Azul_CancelUrl': urls.url_join(base_url, self._cancel_url) + "?return_url=%s&OrderNumber=%s" % (azul_tx_values.get('return_url', '/'), values['reference']),
             'Azul_DeclinedUrl': urls.url_join(base_url, self._declined_url) + "?return_url=%s" % (azul_tx_values.get('return_url', '/')),
 
-            'Azul_UseCustomField1': 0,
+            'Azul_UseCustomField1': '0',
             'Azul_CustomField1Label': '',
             'Azul_CustomField1Value': '',
 
-            'Azul_UseCustomField2': 0,
+            'Azul_UseCustomField2': '0',
             'Azul_CustomField2Label': '',
             'Azul_CustomField2Value': '',
             # 'Brq_culture': (values.get('partner_lang') or 'en_US').replace('_', '-'),
