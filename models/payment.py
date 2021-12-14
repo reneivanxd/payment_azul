@@ -40,6 +40,11 @@ class AzulPaymentAcquirer(models.Model):
         'in': ['Azul_MerchantId', 'Azul_MerchantName', 'Azul_MerchantType', 'Azul_CurrencyCode', 'Azul_OrderNumber', 'Azul_Amount', 'Azul_ITBIS', 'Azul_ApprovedUrl', 'Azul_DeclinedUrl', 'Azul_CancelUrl', 'Azul_UseCustomField1', 'Azul_CustomField1Label', 'Azul_CustomField1Value', 'Azul_UseCustomField2', 'Azul_CustomField2Label', 'Azul_CustomField2Value']
     }
 
+    _azul_auth_hash_encode = {
+        'out': 'utf-16le',
+        'in': 'utf-8'
+    }
+
     _approved_url = '/payment/azul/approved'
     _cancel_url = '/payment/azul/cancel'
     _declined_url = '/payment/azul/declined'
@@ -80,8 +85,9 @@ class AzulPaymentAcquirer(models.Model):
         sign = sign + str(self.azul_auth_key)
         _logger.info('_azul_generate_digital_sign: sign=%s', sign)
 
+        encode = self._azul_auth_hash_encode[inout]
         # secret = self.env['ir.config_parameter'].sudo().get_param('database.secret')
-        return hmac.new(str(self.azul_auth_key).encode('utf-8'), sign.encode('utf-8'), hashlib.sha512).hexdigest()
+        return hmac.new(str(self.azul_auth_key).encode(encode), sign.encode(encode), hashlib.sha512).hexdigest()
 
     @api.multi
     def azul_form_generate_values(self, values):
