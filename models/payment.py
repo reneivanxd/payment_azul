@@ -36,7 +36,7 @@ class AzulPaymentAcquirer(models.Model):
         'AuthKey', required_if_provider='azul', groups='base.group_user')
 
     _azul_auth_hash_fields = {
-        'out': ['OrderNumber', 'Amount', 'AuthorizationCode', 'DateTime', 'ResponseCode' 'IsoCode', 'ResponseMessage', 'ErrorDescription', 'RRN'],
+        'out': ['OrderNumber', 'Amount', 'AuthorizationCode', 'DateTime', 'ResponseCode', 'IsoCode', 'ResponseMessage', 'ErrorDescription', 'RRN'],
         'in': ['Azul_MerchantId', 'Azul_MerchantName', 'Azul_MerchantType', 'Azul_CurrencyCode', 'Azul_OrderNumber', 'Azul_Amount', 'Azul_ITBIS', 'Azul_ApprovedUrl', 'Azul_DeclinedUrl', 'Azul_CancelUrl', 'Azul_UseCustomField1', 'Azul_CustomField1Label', 'Azul_CustomField1Value', 'Azul_UseCustomField2', 'Azul_CustomField2Label', 'Azul_CustomField2Value']
     }
 
