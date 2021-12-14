@@ -1,5 +1,6 @@
 # coding: utf-8
-from hashlib import sha512
+import hashlib
+import hmac
 import logging
 import pprint
 
@@ -79,7 +80,8 @@ class AzulPaymentAcquirer(models.Model):
         sign = sign + str(self.azul_auth_key)
         _logger.info('_azul_generate_digital_sign: sign=%s', sign)
 
-        return sha512(sign.encode('utf-16le')).hexdigest()
+        # secret = self.env['ir.config_parameter'].sudo().get_param('database.secret')
+        return hmac.new(str(self.azul_auth_key).encode('utf-16le'), sign.encode('utf-16le'), hashlib.sha512).hexdigest()
 
     @api.multi
     def azul_form_generate_values(self, values):
