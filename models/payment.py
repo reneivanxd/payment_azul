@@ -81,7 +81,7 @@ class AzulPaymentAcquirer(models.Model):
         _logger.info('_azul_generate_digital_sign: sign=%s', sign)
 
         # secret = self.env['ir.config_parameter'].sudo().get_param('database.secret')
-        return hmac.new(str(self.azul_auth_key).encode('utf-16le'), sign.encode('utf-16le'), hashlib.sha512).hexdigest()
+        return hmac.new(str(self.azul_auth_key).encode('utf-8'), sign.encode('utf-8'), hashlib.sha512).hexdigest()
 
     @api.multi
     def azul_form_generate_values(self, values):
