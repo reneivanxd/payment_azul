@@ -86,6 +86,8 @@ class AzulPaymentAcquirer(models.Model):
     def azul_form_generate_values(self, values):
         base_url = self.get_base_url()
         azul_tx_values = dict(values)
+        tx = self.env['payment.transaction'].search(
+            [('reference', '=', values['reference'])])
         azul_tx_values.update({
             'Azul_MerchantId': self.azul_merchant_id,
             'Azul_MerchantName': self.company_id.name,
@@ -94,7 +96,7 @@ class AzulPaymentAcquirer(models.Model):
             # 'Azul_CurrencyCode': values['currency'] and values['currency'].name or '$',
             'Azul_OrderNumber': values['reference'],
             'Azul_Amount': float_repr(float_round(values['amount'], 2) * 100, 0),
-            'Azul_ITBIS': float_repr(float_round(self.sale_order_id.amount_tax, 2) * 100, 0),
+            'Azul_ITBIS': "000" if not tx or len(tx) > 1 else float_repr(float_round(tx.sale_order_id.amount_tax, 2) * 100, 0),
             'Azul_ApprovedUrl': urls.url_join(base_url, self._approved_url) + "?return_url=%s" % (azul_tx_values.get('return_url', '/')),
             'Azul_CancelUrl': urls.url_join(base_url, self._cancel_url) + "?return_url=%s&OrderNumber=%s" % (azul_tx_values.get('return_url', '/'), values['reference']),
             'Azul_DeclinedUrl': urls.url_join(base_url, self._declined_url) + "?return_url=%s" % (azul_tx_values.get('return_url', '/')),
