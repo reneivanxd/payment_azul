@@ -40,11 +40,6 @@ class AzulPaymentAcquirer(models.Model):
         'in': ['Azul_MerchantId', 'Azul_MerchantName', 'Azul_MerchantType', 'Azul_CurrencyCode', 'Azul_OrderNumber', 'Azul_Amount', 'Azul_ITBIS', 'Azul_ApprovedUrl', 'Azul_DeclinedUrl', 'Azul_CancelUrl', 'Azul_UseCustomField1', 'Azul_CustomField1Label', 'Azul_CustomField1Value', 'Azul_UseCustomField2', 'Azul_CustomField2Label', 'Azul_CustomField2Value']
     }
 
-    # _azul_auth_hash_encode = {
-    #     'out': 'utf-16le',
-    #     'in': 'utf-8'
-    # }
-
     _approved_url = '/payment/azul/approved'
     _cancel_url = '/payment/azul/cancel'
     _declined_url = '/payment/azul/declined'
@@ -85,8 +80,6 @@ class AzulPaymentAcquirer(models.Model):
         sign = sign + str(self.azul_auth_key)
         _logger.info('_azul_generate_digital_sign: sign=%s', sign)
 
-        # encode = self._azul_auth_hash_encode[inout]
-        # secret = self.env['ir.config_parameter'].sudo().get_param('database.secret')
         return hmac.new(str(self.azul_auth_key).encode('utf-8'), sign.encode('utf-16le'), hashlib.sha512).hexdigest()
 
     @api.multi
@@ -101,7 +94,7 @@ class AzulPaymentAcquirer(models.Model):
             # 'Azul_CurrencyCode': values['currency'] and values['currency'].name or '$',
             'Azul_OrderNumber': values['reference'],
             'Azul_Amount': float_repr(float_round(values['amount'], 2) * 100, 0),
-            'Azul_ITBIS': float_repr(float_round(values['amount'] - (values['amount']/1.18), 2) * 100, 0),
+            'Azul_ITBIS': float_repr(float_round(self.sale_order_id.amount_tax, 2) * 100, 0),
             'Azul_ApprovedUrl': urls.url_join(base_url, self._approved_url) + "?return_url=%s" % (azul_tx_values.get('return_url', '/')),
             'Azul_CancelUrl': urls.url_join(base_url, self._cancel_url) + "?return_url=%s&OrderNumber=%s" % (azul_tx_values.get('return_url', '/'), values['reference']),
             'Azul_DeclinedUrl': urls.url_join(base_url, self._declined_url) + "?return_url=%s" % (azul_tx_values.get('return_url', '/')),
@@ -138,20 +131,13 @@ class AzulPaymentAcquirer(models.Model):
 class AzulPaymentTransaction(models.Model):
     _inherit = 'payment.transaction'
 
-    # azul status
-    # _azul_valid_tx_status = [190]
-    # _azu_pending_tx_status = [790, 791, 792, 793]
-    # _azu_cancel_tx_status = [890, 891]
-    # _azu_error_tx_status = [490, 491, 492]
-    # _azu_reject_tx_status = [690]
-
     # --------------------------------------------------
     # FORM RELATED METHODS
     # --------------------------------------------------
 
     @api.model
     def _azul_form_get_tx_from_data(self, data):
-        """ Given a data dict coming from buckaroo, verify it and find the related
+        """ Given a data dict coming from azul, verify it and find the related
         transaction record. """
         _logger.info('_azul_form_get_tx_from_data: data=%s',
                      pprint.pformat(data))

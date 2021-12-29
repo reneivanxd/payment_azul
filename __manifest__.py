@@ -6,7 +6,7 @@
     'summary': 'Payment Acquirer: Azul Implementation',
     'version': '1.0',
     'description': """Azul Payment Acquirer""",
-    'depends': ['payment'],
+    'depends': ['payment', 'sale_payment'],
     'data': [
         'views/payment_views.xml',
         'views/payment_azul_templates.xml',

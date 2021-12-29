@@ -3,7 +3,7 @@
     <data noupdate="1">
         <record id="payment.payment_acquirer_azul" model="payment.acquirer">
             <field name="name">Azul</field>
-            <field name="image" type="base64" file="payment_azul/static/src/img/azul_icon.png"/>
+            <field name="image" type="base64" file="payment_azul/static/src/img/logo.png"/>
             <field name="provider">azul</field>
             <field name="company_id" ref="base.main_company"/>
             <field name="view_template_id" ref="azul_form"/>
