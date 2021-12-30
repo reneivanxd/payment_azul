@@ -23,8 +23,8 @@ class AzulController(http.Controller):
     @http.route('/payment/azul/cancel', type='http', auth='none', csrf=False)
     def azul_cancel(self, **post):
         _logger.info('azul_cancel: post data %s', pprint.pformat(post))
-        # post.update({
-        #     'ResponseMessage': 'CANCELADA'
-        # })
-        # request.env['payment.transaction'].sudo().form_feedback(post, 'azul')
-        return werkzeug.utils.redirect(post.get('return_url', '/'))
+        post.update({
+            'ResponseMessage': 'CANCELADA'
+        })
+        request.env['payment.transaction'].sudo().form_feedback(post, 'azul')
+        return werkzeug.utils.redirect('/shop/payment')
