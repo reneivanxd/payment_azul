@@ -14,16 +14,6 @@ from odoo.http import request
 _logger = logging.getLogger(__name__)
 
 
-# def normalize_keys_upper(data):
-#     """Set all keys of a dictionnary to uppercase
-
-#     Buckaroo parameters names are case insensitive
-#     convert everything to upper case to be able to easily detected the presence
-#     of a parameter by checking the uppercase key only
-#     """
-#     return {key.upper(): val for key, val in data.items()}
-
-
 class AzulPaymentAcquirer(models.Model):
     _inherit = 'payment.acquirer'
 
@@ -93,7 +83,6 @@ class AzulPaymentAcquirer(models.Model):
             'Azul_MerchantName': self.company_id.name,
             'Azul_MerchantType': self.azul_merchant_type,
             'Azul_CurrencyCode': '$',
-            # 'Azul_CurrencyCode': values['currency'] and values['currency'].name or '$',
             'Azul_OrderNumber': values['reference'],
             'Azul_Amount': float_repr(float_round(values['amount'], 2) * 100, 0),
             'Azul_ITBIS': "000" if not tx or len(tx) > 1 else float_repr(float_round(tx.sale_order_id.amount_tax, 2) * 100, 0),
@@ -108,7 +97,6 @@ class AzulPaymentAcquirer(models.Model):
             'Azul_UseCustomField2': '0',
             'Azul_CustomField2Label': '',
             'Azul_CustomField2Value': '',
-            # 'Brq_culture': (values.get('partner_lang') or 'en_US').replace('_', '-'),
         })
         azul_tx_values['Azul_AuthHash'] = self._azul_generate_digital_sign(
             'in', azul_tx_values)
